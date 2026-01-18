@@ -5,20 +5,21 @@ CONTAINER_NAME=gitea
 CONFIG_PATH=/data/gitea/conf/app.ini
 GITEA_URL=http://localhost:8888
 
-# Get username and password from parameters or use defaults
-# Handle empty strings by checking if parameter is set and non-empty
-if [ -n "${1}" ]; then
-  ADMIN_USER="${1}"
-else
-  ADMIN_USER="admin"
+# Read USERNAME and PASSWORD from environment variables (required)
+if [ -z "$USERNAME" ]; then
+  echo "Error: USERNAME environment variable is required"
+  echo "Usage: USERNAME=username PASSWORD=password make create-user"
+  exit 1
 fi
 
-if [ -n "${2}" ]; then
-  ADMIN_PASSWORD="${2}"
-else
-  ADMIN_PASSWORD="password"
+if [ -z "$PASSWORD" ]; then
+  echo "Error: PASSWORD environment variable is required"
+  echo "Usage: USERNAME=username PASSWORD=password make create-user"
+  exit 1
 fi
 
+ADMIN_USER="$USERNAME"
+ADMIN_PASSWORD="$PASSWORD"
 ADMIN_EMAIL=admin@local
 
 # Function to wait for Gitea to be ready

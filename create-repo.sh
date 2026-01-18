@@ -3,18 +3,31 @@ set -e
 
 CONTAINER_NAME=gitea
 GITEA_URL=http://localhost:8888
-ADMIN_USER=mau
-ADMIN_PASSWORD=password
 
-# Get repository name from parameter or use default
-REPO_NAME="${1:-local-repo}"
-
-# Validate repository name is provided
-if [ -z "$REPO_NAME" ]; then
+# Get repository name from parameter (required)
+if [ -z "${1}" ]; then
   echo "Error: Repository name is required"
-  echo "Usage: $0 <repository-name>"
+  echo "Usage: USERNAME=username PASSWORD=password NAME=reponame make create-repo"
   exit 1
 fi
+
+REPO_NAME="${1}"
+
+# Read USERNAME and PASSWORD from environment variables (required)
+if [ -z "$USERNAME" ]; then
+  echo "Error: USERNAME environment variable is required"
+  echo "Usage: USERNAME=username PASSWORD=password NAME=reponame make create-repo"
+  exit 1
+fi
+
+if [ -z "$PASSWORD" ]; then
+  echo "Error: PASSWORD environment variable is required"
+  echo "Usage: USERNAME=username PASSWORD=password NAME=reponame make create-repo"
+  exit 1
+fi
+
+ADMIN_USER="$USERNAME"
+ADMIN_PASSWORD="$PASSWORD"
 
 # Function to wait for Gitea to be ready
 wait_for_gitea() {
