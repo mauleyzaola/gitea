@@ -45,6 +45,7 @@ Simple Docker-based Gitea installation with automated initialization scripts.
 - `make init-gitea` - Initialize Gitea installation (no users created)
 - `make create-user` - Create admin user (**requires** USERNAME and PASSWORD env vars)
 - `make create-repo` - Create repository (**requires** USERNAME, PASSWORD, and NAME env vars)
+- `make delete-repo` - Delete repository (**requires** USERNAME, PASSWORD, and NAME env vars)
 
 ## Examples
 
@@ -56,6 +57,11 @@ USERNAME=john PASSWORD=secret123 make create-user
 ### Create a repository with custom name:
 ```bash
 USERNAME=admin PASSWORD=yourpassword NAME=my-project make create-repo
+```
+
+### Delete a repository:
+```bash
+USERNAME=admin PASSWORD=yourpassword NAME=my-project make delete-repo
 ```
 
 ### Full setup in one go:
@@ -80,11 +86,94 @@ USERNAME=admin PASSWORD=admin123 NAME=test-repo make create-repo
   - `PASSWORD` - Password for authentication
   - `NAME` - Name of the repository to create
 
+- `delete-repo` requires:
+  - `USERNAME` - Username of the user who owns the repository
+  - `PASSWORD` - Password for authentication
+  - `NAME` - Name of the repository to delete
+
 ## Access
 
 - Web UI: http://localhost:8888
 - SSH: localhost:2222
 - API: http://localhost:8888/api/v1
+
+## SSH Configuration for Passwordless Push
+
+To push code without typing username/password, configure SSH authentication:
+
+### 1. Add SSH Key to Gitea
+
+First, add your SSH public key to your Gitea account:
+- Go to http://localhost:8888
+- Navigate to **Settings** → **SSH / GPG Keys**
+- Click **Add Key** and paste your public key (usually `~/.ssh/id_rsa.pub` or `~/.ssh/id_ed25519.pub`)
+
+### 2. Configure SSH Client
+
+Add the following to your `~/.ssh/config` file:
+
+```ssh-config
+Host localhost
+    HostName localhost
+    Port 2222
+    User git
+    IdentityFile ~/.ssh/id_rsa
+    IdentitiesOnly yes
+```
+
+**Note:** Replace `~/.ssh/id_ed25519` with the path to your SSH private key if different (e.g., `~/.ssh/id_rsa`).
+
+### 3. Configure Git Remote
+
+Set up your git remote to use SSH. Replace `USERNAME` and `REPO_NAME` with your actual Gitea username and repository name:
+
+```bash
+git remote add local git@localhost:USERNAME/REPO_NAME.git
+```
+
+Or update an existing remote:
+
+```bash
+git remote set-url local git@localhost:USERNAME/REPO_NAME.git
+```
+
+**Example:**
+```bash
+git remote add local git@localhost:admin/gitea.git
+```
+
+### 4. Test SSH Connection
+
+Verify SSH authentication works:
+
+```bash
+ssh -T git@localhost
+```
+
+You should see a message like:
+```
+Hi there, admin! You've successfully authenticated...
+```
+
+### 5. Push Code
+
+Now you can push without entering credentials:
+
+```bash
+git push -u local HEAD
+```
+
+Or push to a specific branch:
+
+```bash
+git push -u local feature/split-scripts
+```
+
+**Troubleshooting:**
+- If SSH connection fails, verify your SSH key is added to Gitea
+- Check that port 2222 is accessible: `ssh -p 2222 git@localhost`
+- Ensure your SSH config uses the correct IdentityFile path
+- Verify the repository exists and you have push permissions
 
 ## Cleanup
 
