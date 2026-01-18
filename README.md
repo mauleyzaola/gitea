@@ -44,6 +44,7 @@ Simple Docker-based Gitea installation with automated initialization scripts.
 
 - `make init-gitea` - Initialize Gitea installation (no users created)
 - `make create-user` - Create admin user (**requires** USERNAME and PASSWORD env vars)
+- `make create-token` - Create access token that never expires (**requires** USERNAME and PASSWORD env vars)
 - `make create-repo` - Create repository (**requires** USERNAME, PASSWORD, and NAME env vars)
 - `make delete-repo` - Delete repository (**requires** USERNAME, PASSWORD, and NAME env vars)
 
@@ -53,6 +54,13 @@ Simple Docker-based Gitea installation with automated initialization scripts.
 ```bash
 USERNAME=john PASSWORD=secret123 make create-user
 ```
+
+### Create an access token (never expires):
+```bash
+USERNAME=admin PASSWORD=yourpassword make create-token
+```
+
+The token will be displayed in the terminal. **Save it immediately** - it won't be shown again!
 
 ### Create a repository with custom name:
 ```bash
@@ -80,6 +88,10 @@ USERNAME=admin PASSWORD=admin123 NAME=test-repo make create-repo
 - `create-user` requires:
   - `USERNAME` - Username for the admin user
   - `PASSWORD` - Password for the admin user
+
+- `create-token` requires:
+  - `USERNAME` - Username for the user who will own the token
+  - `PASSWORD` - Password for authentication
 
 - `create-repo` requires:
   - `USERNAME` - Username of the user who owns the repository

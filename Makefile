@@ -1,4 +1,4 @@
-.PHONY: clean init-gitea create-user create-repo delete-repo init-repo logs start stop
+.PHONY: clean init-gitea create-user create-token create-repo delete-repo init-repo logs start stop
 
 clean: stop
 	@rm -rf gitea-data
@@ -8,6 +8,9 @@ init-gitea:
 
 create-user:
 	@./create-user.sh
+
+create-token:
+	@./create-token.sh
 
 create-repo:
 	@./create-repo.sh $(NAME)
