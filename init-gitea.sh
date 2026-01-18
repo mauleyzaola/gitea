@@ -2,12 +2,10 @@
 set -e
 
 CONTAINER_NAME=gitea
-CONFIG_PATH=/data/gitea/conf/app.ini
 GITEA_URL=http://localhost:8888
 ADMIN_USER=mau
 ADMIN_PASSWORD=password
 ADMIN_EMAIL=admin@local
-REPO_NAME=mau-local-repo
 
 # Function to wait for Gitea to be ready
 wait_for_gitea() {
@@ -104,7 +102,7 @@ if [ "$INSTALL_PAGE" = "yes" ]; then
       echo "Please visit ${GITEA_URL}/ to complete setup, then run this script again."
       exit 1
     else
-      echo "Installation completed successfully."
+      echo "✓ Gitea installation completed successfully."
     fi
   else
     echo "Installation submission failed with HTTP code: $HTTP_CODE"
@@ -113,108 +111,11 @@ if [ "$INSTALL_PAGE" = "yes" ]; then
     exit 1
   fi
 else
-  echo "Gitea is already installed."
-fi
-
-# Check if admin user exists (wait a bit for installation to complete)
-echo "Waiting for Gitea to be fully ready..."
-sleep 3
-
-echo "Checking if admin user exists..."
-USER_RESPONSE=$(curl -s -u "${ADMIN_USER}:${ADMIN_PASSWORD}" "${GITEA_URL}/api/v1/user" 2>/dev/null)
-USER_EXISTS=$(echo "$USER_RESPONSE" | grep -q '"id"' && echo "yes" || echo "no")
-
-if [ "$USER_EXISTS" = "yes" ]; then
-  echo "✓ Admin user already exists"
-  echo "$USER_RESPONSE" | grep -E '"id"|"login"|"email"' | head -3 || true
-else
-  echo "Admin user does not exist. Creating admin user..."
-  
-  # Find the config file path
-  CONFIG_FILE=""
-  if docker exec -u git "$CONTAINER_NAME" test -f "$CONFIG_PATH" 2>/dev/null; then
-    CONFIG_FILE="$CONFIG_PATH"
-  elif docker exec -u git "$CONTAINER_NAME" test -f /data/gitea/conf/app.ini 2>/dev/null; then
-    CONFIG_FILE="/data/gitea/conf/app.ini"
-  fi
-  
-  # Create admin user using Gitea CLI
-  if [ -n "$CONFIG_FILE" ]; then
-    echo "Using config file: $CONFIG_FILE"
-    docker exec -u git "$CONTAINER_NAME" \
-      gitea admin user create \
-      --config "$CONFIG_FILE" \
-      --username "$ADMIN_USER" \
-      --password "$ADMIN_PASSWORD" \
-      --email "$ADMIN_EMAIL" \
-      --admin \
-      --must-change-password=false || {
-        echo "Warning: User creation with config failed, trying without config..."
-        docker exec -u git "$CONTAINER_NAME" \
-          gitea admin user create \
-          --username "$ADMIN_USER" \
-          --password "$ADMIN_PASSWORD" \
-          --email "$ADMIN_EMAIL" \
-          --admin \
-          --must-change-password=false || true
-      }
-  else
-    echo "No config file found, creating user without config..."
-    docker exec -u git "$CONTAINER_NAME" \
-      gitea admin user create \
-      --username "$ADMIN_USER" \
-      --password "$ADMIN_PASSWORD" \
-      --email "$ADMIN_EMAIL" \
-      --admin \
-      --must-change-password=false || {
-        echo "Error: Failed to create user via CLI"
-        exit 1
-      }
-  fi
-  
-  # Verify user was created
-  echo "Verifying user creation..."
-  sleep 3
-  USER_RESPONSE=$(curl -s -u "${ADMIN_USER}:${ADMIN_PASSWORD}" "${GITEA_URL}/api/v1/user" 2>/dev/null)
-  USER_EXISTS=$(echo "$USER_RESPONSE" | grep -q '"id"' && echo "yes" || echo "no")
-  
-  if [ "$USER_EXISTS" != "yes" ]; then
-    echo "✗ Error: User creation failed - could not verify via API"
-    echo "Response: $USER_RESPONSE"
-    exit 1
-  else
-    echo "✓ Admin user created successfully"
-    echo "$USER_RESPONSE" | grep -E '"id"|"login"|"email"' | head -3 || true
-  fi
-fi
-
-# Check if repository exists, create if not
-echo "Checking if repository '${REPO_NAME}' exists..."
-REPO_EXISTS=$(curl -s -u "${ADMIN_USER}:${ADMIN_PASSWORD}" "${GITEA_URL}/api/v1/repos/${ADMIN_USER}/${REPO_NAME}" 2>/dev/null | grep -q '"id"' && echo "yes" || echo "no")
-
-if [ "$REPO_EXISTS" = "yes" ]; then
-  echo "✓ Repository '${REPO_NAME}' already exists"
-else
-  echo "Creating repository '${REPO_NAME}'..."
-  REPO_RESPONSE=$(curl -s -X POST -u "${ADMIN_USER}:${ADMIN_PASSWORD}" \
-    -H "Content-Type: application/json" \
-    "${GITEA_URL}/api/v1/user/repos" \
-    -d "{\"name\":\"${REPO_NAME}\",\"description\":\"Test repository\",\"private\":false,\"auto_init\":true}")
-  
-  if echo "$REPO_RESPONSE" | grep -q '"id"'; then
-    echo "✓ Repository '${REPO_NAME}' created successfully"
-    echo "$REPO_RESPONSE" | grep -E '"id"|"name"|"full_name"' | head -3 || true
-  else
-    echo "✗ Failed to create repository"
-    echo "Response: $REPO_RESPONSE"
-    exit 1
-  fi
+  echo "✓ Gitea is already installed."
 fi
 
 echo ""
-echo "Gitea initialized successfully!"
+echo "Gitea initialization complete!"
 HEALTH_STATUS=$(curl -s ${GITEA_URL}/api/healthz 2>/dev/null | grep -o '"status":"[^"]*"' | cut -d'"' -f4 || echo "unknown")
 echo "  - Health: ${HEALTH_STATUS:-pass}"
-echo "  - Admin user: ${ADMIN_USER}"
-echo "  - Repository: ${ADMIN_USER}/${REPO_NAME}"
 echo "  - URL: ${GITEA_URL}"
