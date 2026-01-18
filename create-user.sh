@@ -4,8 +4,21 @@ set -e
 CONTAINER_NAME=gitea
 CONFIG_PATH=/data/gitea/conf/app.ini
 GITEA_URL=http://localhost:8888
-ADMIN_USER=mau
-ADMIN_PASSWORD=password
+
+# Get username and password from parameters or use defaults
+# Handle empty strings by checking if parameter is set and non-empty
+if [ -n "${1}" ]; then
+  ADMIN_USER="${1}"
+else
+  ADMIN_USER="admin"
+fi
+
+if [ -n "${2}" ]; then
+  ADMIN_PASSWORD="${2}"
+else
+  ADMIN_PASSWORD="password"
+fi
+
 ADMIN_EMAIL=admin@local
 
 # Function to wait for Gitea to be ready

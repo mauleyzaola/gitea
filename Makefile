@@ -7,13 +7,10 @@ init-gitea:
 	@./init-gitea.sh
 
 create-user:
-	@./create-user.sh
+	@./create-user.sh $(USERNAME) $(PASSWORD)
 
 create-repo:
 	@./create-repo.sh $(NAME)
-
-init-repo: init-gitea create-user
-	@$(MAKE) create-repo NAME=$(NAME)
 
 logs:
 	@docker compose logs -f
