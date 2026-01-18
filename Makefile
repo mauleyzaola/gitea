@@ -7,7 +7,7 @@ init-gitea:
 	@./init-gitea.sh
 
 create-user:
-	@./create-user.sh $(USERNAME) $(PASSWORD)
+	@./create-user.sh
 
 create-repo:
 	@./create-repo.sh $(NAME)

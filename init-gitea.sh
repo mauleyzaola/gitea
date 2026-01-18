@@ -3,9 +3,6 @@ set -e
 
 CONTAINER_NAME=gitea
 GITEA_URL=http://localhost:8888
-ADMIN_USER=mau
-ADMIN_PASSWORD=password
-ADMIN_EMAIL=admin@local
 
 # Function to wait for Gitea to be ready
 wait_for_gitea() {
@@ -74,7 +71,8 @@ if [ "$INSTALL_PAGE" = "yes" ]; then
   fi
   
   # Prepare installation data (use lowercase sqlite3 for database type)
-  INSTALL_DATA="${CSRF_PARAM}db_type=sqlite3&db_path=%2Fdata%2Fgitea.db&app_name=Gitea&repo_root_path=%2Fdata%2Fgit%2Frepositories&lfs_root_path=%2Fdata%2Fgit%2Flfs&run_user=git&domain=localhost&ssh_port=2222&http_port=8888&app_url=http%3A%2F%2Flocalhost%3A8888%2F&log_root_path=%2Fdata%2Fgitea%2Flog&smtp_addr=&smtp_port=&smtp_from=&smtp_user=&smtp_passwd=&enable_federated_avatar=on&enable_open_id_sign_in=on&enable_open_id_sign_up=on&default_allow_create_organization=on&default_enable_timetracking=on&no_reply_address=noreply.localhost&admin_name=${ADMIN_USER}&admin_passwd=${ADMIN_PASSWORD}&admin_confirm_passwd=${ADMIN_PASSWORD}&admin_email=${ADMIN_EMAIL}"
+  # Note: Admin user creation is handled separately via create-user target
+  INSTALL_DATA="${CSRF_PARAM}db_type=sqlite3&db_path=%2Fdata%2Fgitea.db&app_name=Gitea&repo_root_path=%2Fdata%2Fgit%2Frepositories&lfs_root_path=%2Fdata%2Fgit%2Flfs&run_user=git&domain=localhost&ssh_port=2222&http_port=8888&app_url=http%3A%2F%2Flocalhost%3A8888%2F&log_root_path=%2Fdata%2Fgitea%2Flog&smtp_addr=&smtp_port=&smtp_from=&smtp_user=&smtp_passwd=&enable_federated_avatar=on&enable_open_id_sign_in=on&enable_open_id_sign_up=on&default_allow_create_organization=on&default_enable_timetracking=on&no_reply_address=noreply.localhost"
   
   echo "Submitting installation form..."
   INSTALL_RESPONSE=$(curl -s -L -b "$COOKIE_JAR" -c "$COOKIE_JAR" -X POST "${GITEA_URL}/" \
