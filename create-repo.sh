@@ -5,7 +5,16 @@ CONTAINER_NAME=gitea
 GITEA_URL=http://localhost:8888
 ADMIN_USER=mau
 ADMIN_PASSWORD=password
-REPO_NAME=mau-local-repo
+
+# Get repository name from parameter or use default
+REPO_NAME="${1:-local-repo}"
+
+# Validate repository name is provided
+if [ -z "$REPO_NAME" ]; then
+  echo "Error: Repository name is required"
+  echo "Usage: $0 <repository-name>"
+  exit 1
+fi
 
 # Function to wait for Gitea to be ready
 wait_for_gitea() {
