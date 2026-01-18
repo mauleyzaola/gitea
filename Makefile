@@ -1,10 +1,18 @@
-.PHONY: clean init-repo logs start stop
+.PHONY: clean init-gitea create-user create-repo init-repo logs start stop
 
 clean: stop
 	@rm -rf gitea-data
 
-init-repo:
-	./init-gitea.sh
+init-gitea:
+	@./init-gitea.sh
+
+create-user:
+	@./create-user.sh
+
+create-repo:
+	@./create-repo.sh
+
+init-repo: init-gitea create-user create-repo
 
 logs:
 	@docker compose logs -f
