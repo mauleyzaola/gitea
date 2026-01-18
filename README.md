@@ -187,6 +187,76 @@ git push -u local feature/split-scripts
 - Ensure your SSH config uses the correct IdentityFile path
 - Verify the repository exists and you have push permissions
 
+## Workaround Big git-lfs repository
+
+When pushing large repositories with Git LFS, you may encounter errors about missing LFS objects in the commit history. This happens because Git LFS validates all objects referenced in the entire commit history being pushed, not just the current HEAD.
+
+If you don't mind losing git history, you can create a new branch with no history and push only the current files:
+
+### Create a Fresh Branch Without History
+
+```bash
+cd /path/to/your/repository
+
+# Create a new orphan branch (no parent commits, no history)
+git checkout --orphan fresh-start
+
+# Remove all files from staging (they're still in your working directory)
+git rm -rf --cached .
+
+# Add all current files
+git add .
+
+# Create the initial commit
+git commit -m "Initial commit - fresh start without history"
+
+# Push to your local Gitea remote
+git push -u local fresh-start
+```
+
+### Alternative: Push to a Different Branch Name
+
+If you want to keep your current branch but push a fresh version:
+
+```bash
+cd /path/to/your/repository
+
+# Create orphan branch with a specific name
+git checkout --orphan master-clean
+
+# Remove all tracked files from git index
+git rm -rf --cached .
+
+# Add everything back
+git add .
+
+# Commit
+git commit -m "Fresh start - no history"
+
+# Push to local remote
+git push -u local master-clean
+```
+
+### What This Does
+
+- Creates a new branch with no parent commits (orphan branch)
+- Removes all files from Git's index
+- Re-adds all current files as new
+- Creates a single initial commit
+- Pushes only that commit (no history)
+
+### After Pushing
+
+You'll have:
+- A new branch on your Gitea remote with just one commit
+- All your current files
+- No git history (no old commits)
+- No LFS history issues (since there's no history to validate)
+
+You can then set this as your main branch or continue working from it. The old branch will remain locally but won't be pushed unless you explicitly push it.
+
+**Note:** This procedure permanently discards all commit history. Make sure this is what you want before proceeding.
+
 ## Cleanup
 
 To completely remove Gitea and all data:
