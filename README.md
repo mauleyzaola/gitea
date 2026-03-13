@@ -264,6 +264,16 @@ To completely remove Gitea and all data:
 make clean
 ```
 
+## Large Repositories
+
+Repository in `gitea` should already exist.
+
+```bash
+cp -r ~/stuff/content/.git ./gitea-data/git/repositories/admin/content.git
+cp -r ~/stuff/content/.git/lfs/objects ./gitea-data/git/lfs/
+docker exec -u git -it gitea gitea admin regenerate hooks
+```
+
 This will stop the container and delete the `gitea-data` directory.
 
 ## Notes
